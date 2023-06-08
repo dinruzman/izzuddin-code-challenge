@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Services\StoreStudentsData;
+use Response;
 
 class StudentController extends Controller
 {
@@ -11,7 +14,9 @@ class StudentController extends Controller
      */
     public function index()
     {
-        //
+        $students = Student::get();
+
+        return view('welcome',compact('students'));
     }
 
     /**
@@ -25,9 +30,16 @@ class StudentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request,StoreStudentsData $storeStudentsData)
     {
-        //
+        $request->validate([
+            'fileUpload' => 'required|mimes:xls,xlsx',
+        ]);
+
+        /** move the logic to service container */
+        $storeStudentsData->storeStudentData($request);
+
+        return redirect('/')->with('success', 'Import successful!');
     }
 
     /**
@@ -60,5 +72,10 @@ class StudentController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function download(){
+        $filepath = public_path('excel/example_excel.xlsx');
+        return Response::download($filepath);
     }
 }
