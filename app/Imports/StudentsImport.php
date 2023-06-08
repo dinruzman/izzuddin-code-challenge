@@ -18,16 +18,19 @@ class StudentsImport implements ToCollection,WithHeadingRow
 
     public function collection(Collection $rows)
     {
+        $array = $rows->toArray();
+        $array = array_combine(range(1, count($array)), $array);
+
+        Validator::make($array, [
+            '*.name' => 'required',
+            '*.class' => 'required',
+            '*.level' => 'required',
+            '*.parent_contact' => 'required|regex:/^[0-9]+$/|digits_between:10,11',
+        ])->validate();
+
         foreach ($rows as $row)
         {
             $student = Student::where('name',$row['name'])->where('class',$row['class'])->where('level',$row['level'])->where('parent_phone_no',$row['parent_contact'])->first();
-
-            Validator::make($rows->toArray(), [
-                '*.name' => 'required',
-                '*.class' => 'required',
-                '*.level' => 'required',
-                '*.parent_contact' => 'required|digits_between:10,11',
-            ])->validate();
 
             if(!$student){
                 Student::create([
